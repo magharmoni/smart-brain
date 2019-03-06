@@ -24,7 +24,7 @@ const particlesOptions = {
 const intialState = {
   input: '',
   imageUrl: '',
-  box: {},
+  boxes: [],
   route: 'signin',
   isSignedIn: false,
   user: {
@@ -43,27 +43,29 @@ constructor() {
     this.state = intialState;
 }
 
-calculateFaceLocation = (data) => {
- const clarifaiFace = data.outputs[0].data.regions[0].region_info.bounding_box;
- const image = document.getElementById('inputImage');
- const height = image.height;
- const width = image.width;
- console.log(width, height);
- return {
-  leftCol: (clarifaiFace.left_col * width),
-  topRow: (clarifaiFace.top_row * height),
-  rightCol: (width - clarifaiFace.right_col * width),
-  bottomRow: (height - clarifaiFace.bottom_row * height)
- };
+calculateFaceLocations = (data) => {  
+  const image = document.getElementById('inputImage');
+  const height = image.height;
+  const width = image.width;
+  return data.outputs[0].data.regions.map(face => {
+    const clarifaiFace = face.region_info.bounding_box;
+    return {
+        leftCol: (clarifaiFace.left_col * width),
+        topRow: (clarifaiFace.top_row * height),
+        rightCol: (width - clarifaiFace.right_col * width),
+        bottomRow: (height - clarifaiFace.bottom_row * height)  
+      }
+  });
 }
 
-displayFaceBox = (box) => {
-  this.setState({box: box});
+
+
+displayFaceBoxes = (boxes) => {
+  this.setState({boxes: boxes});
 }
 
 onInputChange = (event) => {
   this.setState({ input: event.target.value });
-  console.log(this.state.input);
 }
 
 onButtonSubmit = () => {
@@ -91,7 +93,7 @@ onButtonSubmit = () => {
             })
           .catch(console.log)
       }
-      this.displayFaceBox(this.calculateFaceLocation(response))
+      this.displayFaceBoxes(this.calculateFaceLocations(response))
   })
     .catch(err => console.log(err));
 }
@@ -117,7 +119,7 @@ loadUser = (data) => {
 }
 
   render() {
-    const {imageUrl, route, box, user, isSignedIn } = this.state;
+    const {imageUrl, route, boxes, user, isSignedIn } = this.state;
     return (
       <div className="App">
         <Particles className='particles'
@@ -131,7 +133,7 @@ loadUser = (data) => {
           <ImageLinkForm 
             onInputChange={this.onInputChange} 
             onButtonSubmit={this.onButtonSubmit}/>
-          <FaceRecognition box={box} imageUrl={imageUrl}/>
+          <FaceRecognition boxes={boxes} imageUrl={imageUrl}/>
         </div>
           : (
             route === 'signin'

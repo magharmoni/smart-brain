@@ -18,7 +18,6 @@ class Signin extends React.Component {
     }
 
     onSubmitSignIn = () => {
-        console.log('State on submit: ', this.state);
         fetch('https://ghostly-shadow-53379.herokuapp.com/signin', {
             method: 'post',
             headers: {'Content-Type': 'application/json'},
